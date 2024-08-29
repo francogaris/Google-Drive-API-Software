@@ -1,9 +1,0 @@
-version '3.8'
-
-services
-  app
-    image francogarischallenge_melilatest
-    ports
-      - 80008000
-    env_file
-      - .env
