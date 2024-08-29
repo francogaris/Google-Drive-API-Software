@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Configurar el comando por defecto para ejecutar el main.py
-CMD ["python", "APP/Scripts/main.py"]
+CMD ["python", "Scripts/main.py"]
