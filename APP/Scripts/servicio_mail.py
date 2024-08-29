@@ -1,6 +1,7 @@
 import os
 import base64
 import logging
+import json
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -10,28 +11,34 @@ from email.mime.text import MIMEText
 SCOPES_GMAIL = ['https://www.googleapis.com/auth/gmail.send']
 
 def autenticacion_gmail():
-        
-    try:
-        creds = None
-        token_path = 'token_email.json'
+    """Autentica al usuario y devuelve un servicio de Gmail."""
+    creds = None
 
-        if os.path.exists(token_path):
-            creds = Credentials.from_authorized_user_file(token_path, SCOPES_GMAIL)
+    try:
+        # Leer credenciales y token de las variables de entorno
+        credentials_json = os.getenv('GMAIL_CREDENTIALS_JSON')
+        token_json = os.getenv('GMAIL_TOKEN_JSON')
+
+        if token_json:
+            creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES_GMAIL)
+
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file('credentials_email.json', SCOPES_GMAIL)
-                creds = flow.run_local_server(port=0)
-            with open(token_path, 'w') as token:
-                token.write(creds.to_json())
+                if not credentials_json:
+                    raise ValueError("No se proporcionaron credenciales de Gmail")
+                creds = InstalledAppFlow.from_client_config(json.loads(credentials_json), SCOPES_GMAIL).run_local_server(port=0)
+            # Guardar el token para futuras ejecuciones
+            token_json = creds.to_json()
+            os.environ['GMAIL_TOKEN_JSON'] = token_json
         logging.info('Servicio de Gmail creado exitosamente')
         return build('gmail', 'v1', credentials=creds)
 
     except Exception as e:
         logging.error('Error durante la autenticación: %s', e)
         raise e
-    
+
 def cambiar_visibilidad_archivo(service, file_id):
     """Cambia la visibilidad de un archivo a privado."""
     try:
@@ -49,9 +56,7 @@ def crear_mensaje(destinatario, asunto, cuerpo):
     message['Subject'] = asunto
     # Convierte el mensaje a bytes y luego a una cadena codificada en base64
     raw = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
-    
     raw = raw.replace("=", "")
-    
     return {'raw': raw}
 
 def enviar_mail(service, destinatario, nombre_archivo):

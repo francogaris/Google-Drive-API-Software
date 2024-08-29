@@ -1,13 +1,10 @@
 import logging
 import pyodbc
 import os
-from dotenv import load_dotenv
 
 def conectar_db():
     """Establece la conexión con SQL Server."""
-
-    load_dotenv()
-
+    
     server = os.getenv('DB_SERVER')
     database = os.getenv('DB_DATABASE')
     username = os.getenv('DB_USERNAME')
