@@ -17,8 +17,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r Challenge Mercado Libre - Google Drive API/APP/requirements.txt
+        pip install -r APP/requirements.txt
 
+    - name: Main
+      run: |
+        python APP/Scripts/main.py
+        
     - name: Run database script
       run: |
         python APP/Scripts/bd_conexion.py
