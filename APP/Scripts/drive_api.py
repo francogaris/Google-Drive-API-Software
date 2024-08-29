@@ -30,31 +30,15 @@ def autenticacion_api():
             }
             creds = Credentials.from_authorized_user_info(creds_data)
 
-        # Si no hay credenciales válidas, realiza la autenticación
+        # Si no hay credenciales válidas, realiza la autenticación con el flujo de autorización
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
                 logging.info('Credenciales refrescadas exitosamente')
             else:
-                flow = InstalledAppFlow.from_client_config(
-                    {
-                        "installed": {
-                            "client_id": client_id,
-                            "client_secret": client_secret,
-                            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                            "token_uri": "https://oauth2.googleapis.com/token",
-                            "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
-                        }
-                    },
-                    SCOPES
-                )
-                creds = flow.run_local_server(port=0)
-                logging.info('Autenticación completada exitosamente')
-
-            # Guardar el token de acceso y el refresh token como variables de entorno (para futuras ejecuciones)
-            os.environ["GOOGLE_TOKEN"] = creds.token
-            os.environ["GOOGLE_REFRESH_TOKEN"] = creds.refresh_token
-            logging.info('Credenciales guardadas en variables de entorno')
+                # Usa un método de autenticación adecuado para entornos sin navegador
+                logging.error('No se puede autenticar. Revisa las credenciales proporcionadas.')
+                raise Exception('No se puede autenticar.')
 
         service = build('drive', 'v3', credentials=creds)
         logging.info('Servicio de Google Drive creado exitosamente')
@@ -63,6 +47,7 @@ def autenticacion_api():
     except Exception as e:
         logging.error('Error durante la autenticación: %s', e)
         raise e
+
 
 def lista_archivos_drive(service):
     """Lista todos los archivos en la unidad de Google Drive."""
