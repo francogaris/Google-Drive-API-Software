@@ -17,7 +17,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r APP/requirements.txt
+        pip install -r APP/Scripts/requirements.txt
 
     - name: Main
       run: |
