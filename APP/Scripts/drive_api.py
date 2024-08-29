@@ -23,6 +23,7 @@ def autenticacion_api():
         logging.info(f"Client ID: {client_id}")
         logging.info(f"Client Secret: {client_secret}")
         logging.info(f"Refresh Token: {refresh_token}")
+        
 
         if token and client_id and client_secret:
             creds_data = {
