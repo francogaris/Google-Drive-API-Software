@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -28,11 +28,11 @@ jobs:
                      --build-arg DB_DATABASE=${{ secrets.DB_DATABASE }} \
                      --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} \
                      --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                     --build-arg GMAIL_CREDENTIALS_JSON=${{secrets.GMAIL_CREDENTIALS_JSON }}\
-                     --build-arg GMAIL_TOKEN_JSON=${{secrets.GMAIL_TOKEN_JSON }}\
-                     --build-arg GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID }}\
-                     --build-arg GOOGLE_CLIENT_SECRET=${{secrets.GOOGLE_CLIENT_SECRET }}\
-                     --build-arg GOOGLE_REFRESH_TOKEN=${{secrets.GOOGLE_REFRESH_TOKEN }}\
-                     --build-arg GOOGLE_TOKEN=${{secrets.GOOGLE_TOKEN }}\
-                     -t mi-imagen-app:latest -f APP/Scripts/Dockerfile .
-        docker push mi-imagen-app:latest
+                     --build-arg GMAIL_CREDENTIALS_JSON=${{ secrets.GMAIL_CREDENTIALS_JSON }} \
+                     --build-arg GMAIL_TOKEN_JSON=${{ secrets.GMAIL_TOKEN_JSON }} \
+                     --build-arg GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+                     --build-arg GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+                     --build-arg GOOGLE_REFRESH_TOKEN=${{ secrets.GOOGLE_REFRESH_TOKEN }} \
+                     --build-arg GOOGLE_TOKEN=${{ secrets.GOOGLE_TOKEN }} \
+                     -t francogaris/challenge_meli:latest -f App/Scripts/Dockerfile .
+        docker push francogaris/challenge_meli:latest
