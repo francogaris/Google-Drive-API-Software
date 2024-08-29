@@ -19,6 +19,11 @@ def autenticacion_api():
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
         refresh_token = os.getenv("GOOGLE_REFRESH_TOKEN")
 
+        logging.info(f"Token: {token}")
+        logging.info(f"Client ID: {client_id}")
+        logging.info(f"Client Secret: {client_secret}")
+        logging.info(f"Refresh Token: {refresh_token}")
+
         if token and client_id and client_secret:
             creds_data = {
                 "token": token,
@@ -48,6 +53,7 @@ def autenticacion_api():
         logging.error('Error durante la autenticación: %s', e)
         raise e
 
+autenticacion_api()
 
 def lista_archivos_drive(service):
     """Lista todos los archivos en la unidad de Google Drive."""
