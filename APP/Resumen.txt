@@ -1,0 +1,10 @@
+Lenguaje: Python 3.12.5
+Base de Datos: SQL Server
+Librerías:
+  - google-auth y google-auth-oauthlib: para autenticación y acceso a la API de Google Drive.
+  - google-api-python-client: para interactuar con Google Drive.
+  - pyodbc: para conectarse a SQL Server desde Python.
+  - smtplib: para el envío de correos electrónicos.
+  - dotenv: para gestionar las credenciales de forma segura.
+  - unittest: para las pruebas.
+
