@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - master
+      - master  # Puedes especificar la rama que activará la acción
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
       uses: actions/checkout@v2  # Toma el código de la rama especificada
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1  # Configura Docker Buildx, que permite multi-platform builds
+      uses: docker/setup-buildx-action@v1  # Configura Docker Buildx
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v1  # Autentica en Docker Hub
@@ -34,6 +34,5 @@ jobs:
                             --build-arg GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
                             --build-arg GOOGLE_REFRESH_TOKEN=${{ secrets.GOOGLE_REFRESH_TOKEN }} \
                             --build-arg GOOGLE_TOKEN=${{ secrets.GOOGLE_TOKEN }} \
-                            -t francogaris/challenge_meli:latest \  # Etiqueta para la imagen
-                            -f App/Scripts/Dockerfile .  # Contexto de construcción (directorio actual)
+                            -t francogaris/challenge_meli:latest .  # Asegúrate de especificar la ruta correcta
         docker push francogaris/challenge_meli:latest  # Empuja la imagen a Docker Hub
