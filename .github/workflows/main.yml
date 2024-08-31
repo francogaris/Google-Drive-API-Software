@@ -21,7 +21,7 @@ jobs:
     
     - name: Drive Test
       run: |
-        python APP/Scripts/Tests/drive_api.py
+        python APP/Scripts/Tests/test_drive_api.py
       env:
         DB_SERVER: ${{ secrets.DB_SERVER }}
         DB_DATABASE: ${{ secrets.DB_DATABASE }}
@@ -36,7 +36,7 @@ jobs:
 
     - name: BD Test
       run: |
-        python APP/Scripts/Tests/bd_conexion.py
+        python APP/Scripts/Tests/test_bd.py
       env:
         DB_SERVER: ${{ secrets.DB_SERVER }}
         DB_DATABASE: ${{ secrets.DB_DATABASE }}
@@ -51,7 +51,7 @@ jobs:
 
     - name: Mail Test
       run: |
-        python APP/Scripts/Tests/servicio_mail.py
+        python APP/Scripts/Tests/test_email.py
       env:
         DB_SERVER: ${{ secrets.DB_SERVER }}
         DB_DATABASE: ${{ secrets.DB_DATABASE }}
