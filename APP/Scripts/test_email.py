@@ -5,13 +5,13 @@ from servicio_mail import autenticacion_gmail, cambiar_visibilidad_archivo, crea
 class TestServicioMail(unittest.TestCase):
 
     @patch('servicio_mail.build')
-    @patch('servicio_mail.Credentials.from_authorized_user_file')
-    def test_autenticacion_gmail(self, mock_from_authorized_user_file, mock_build):
-        # Simula la función de las credenciales y contrucción
+    @patch('servicio_mail.Credentials.from_authorized_user_info')
+    def test_autenticacion_gmail(self, mock_from_authorized_user_info, mock_build):
+        # Simula la función de las credenciales y construcción
         mock_creds = MagicMock()
-        mock_service = MagicMock()
-        mock_from_authorized_user_file.return_value = mock_creds
-        mock_build.return_value = mock_service
+        mock_build_service = MagicMock()
+        mock_from_authorized_user_info.return_value = mock_creds
+        mock_build.return_value = mock_build_service
 
         service = autenticacion_gmail()
 
