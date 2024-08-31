@@ -6,23 +6,19 @@ from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar
 class TestBDConexion(unittest.TestCase):
 
     @patch('bd_conexion.pyodbc.connect')
-    @patch('bd_conexion.load_dotenv')
-    def test_conectar_db(self, mock_load_dotenv, mock_connect):
+    def test_conectar_db(self, mock_connect):
         # Configura el mock para que devuelva una conexión ficticia
         mock_connect.return_value = 'mock_connection'
         
         # Llama a la función conectar_db
         conexion = bd_conexion.conectar_db()
         
-        # Verifica que se haya llamado a connect con el formato correcto
-        expected_call = call(f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER=;DATABASE=;UID=;PWD=')
-        # Utiliza assert_called_once_with para verificar que se haya llamado una vez con la cadena de conexión esperada
+        # Verifica que se haya llamado a connect
         mock_connect.assert_called_once()
 
         # Verifica que el objeto de conexión se haya devuelto
         self.assertEqual(conexion, 'mock_connection')
 
-    
     @patch('bd_conexion.conectar_db')
     def test_crear_tablas(self, mock_conectar_db):
         # Configuración del mock
