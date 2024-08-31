@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock, call
 import bd_conexion
-from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
+from APP.Scripts.bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
 
 class TestBDConexion(unittest.TestCase):
 

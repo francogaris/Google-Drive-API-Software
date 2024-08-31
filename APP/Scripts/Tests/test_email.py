@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from servicio_mail import autenticacion_gmail, cambiar_visibilidad_archivo, crear_mensaje, enviar_mail
+from APP.Scripts.servicio_mail import autenticacion_gmail, cambiar_visibilidad_archivo, crear_mensaje, enviar_mail
 
 class TestServicioMail(unittest.TestCase):
 
