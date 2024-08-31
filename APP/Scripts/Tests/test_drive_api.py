@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from APP.Scripts.drive_api import autenticacion_api, lista_archivos_drive, es_archivo_publico
+from Scripts.drive_api import autenticacion_api, lista_archivos_drive, es_archivo_publico
 
 class TestDriveAPI(unittest.TestCase):
 
