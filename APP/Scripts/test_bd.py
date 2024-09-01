@@ -57,7 +57,7 @@ class TestBDConexion(unittest.TestCase):
         mock_cursor.execute.assert_any_call(expected_query_files)
         mock_cursor.execute.assert_any_call(expected_query_historical_files)
 
-    @patch('tu_modulo.conectar_db')
+    @patch('bd_conexion.mysql.connector.connect')
     def test_guardar_archivo(self, mock_conectar_db):
         # Configuración del mock
         mock_connection = MagicMock()
@@ -79,23 +79,24 @@ class TestBDConexion(unittest.TestCase):
         mock_connection.commit.assert_called_once()
 
     @patch('bd_conexion.mysql.connector.connect')
-    def test_inventario_historico(self, mock_connect):
-        # Configura el mock de la conexión y el cursor
+    def test_inventario_historico(self, mock_conectar_db):
+        # Configuración del mock
         mock_connection = MagicMock()
+        mock_conectar_db.return_value = mock_connection
         mock_cursor = MagicMock()
-        mock_connect.return_value = mock_connection
         mock_connection.cursor.return_value = mock_cursor
 
-        # Llama a la función con visibilidad 'public' y formato de fecha correcto
-        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', '2024-08-28T12:34:56.000Z')
+        # Ejecutar la función con el formato de fecha correcto
+        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', datetime.datetime(2024, 8, 28, 12, 34, 56))
 
-        # Verifica que se ejecutó el INSERT
-        mock_cursor.execute.assert_called_once_with('''
-                INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', ('archivo', 'txt', 'owner', 'public', '2024-08-28T12:34:56.000Z'))
-
-        # Verifica que se hizo commit
+        # Verificaciones
+        mock_connection.cursor.assert_called_once()
+        expected_query = '''
+            INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
+            VALUES (%s, %s, %s, %s, %s)
+        '''
+        # Verificar que la consulta esperada haya sido ejecutada
+        mock_cursor.execute.assert_called_once_with(expected_query, ('archivo', 'txt', 'owner', 'public', datetime.datetime(2024, 8, 28, 12, 34, 56)))
         mock_connection.commit.assert_called_once()
 
 if __name__ == '__main__':
