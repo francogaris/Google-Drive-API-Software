@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import bd_conexion
 from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
+from datetime import datetime
 
 class TestBDConexion(unittest.TestCase):
 
@@ -56,23 +57,26 @@ class TestBDConexion(unittest.TestCase):
         mock_cursor.execute.assert_any_call(expected_query_files)
         mock_cursor.execute.assert_any_call(expected_query_historical_files)
 
-    @patch('bd_conexion.conectar_db')
+    @patch('tu_modulo.conectar_db')
     def test_guardar_archivo(self, mock_conectar_db):
         # Configuración del mock
         mock_connection = MagicMock()
         mock_conectar_db.return_value = mock_connection
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value = mock_cursor
         
         # Ejecutar la función con el formato de fecha correcto
-        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', '2024-08-28T12:34:56.000Z')
-        
+        guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', datetime.datetime(2024, 8, 28, 12, 34, 56))
+
         # Verificaciones
         mock_connection.cursor.assert_called_once()
-        mock_cursor = mock_connection.cursor.return_value
         expected_query = '''
-            SELECT id FROM files WHERE nombre = %s AND extension = %s
+            INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
+            VALUES (%s, %s, %s, %s, %s)
         '''
         # Verificar que la consulta esperada haya sido ejecutada
-        mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt'))
+        mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt', 'test_owner', 'private', datetime.datetime(2024, 8, 28, 12, 34, 56)))
+        mock_connection.commit.assert_called_once()
 
     @patch('bd_conexion.mysql.connector.connect')
     def test_inventario_historico(self, mock_connect):

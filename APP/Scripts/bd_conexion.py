@@ -64,38 +64,31 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
     try:
         cursor = connection.cursor()
 
-        # Intentar con el primer formato (ISO 8601 con 'Z')
-        try:
-            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
-        except ValueError:
-            # Si falla, intentar con el formato sin 'Z'
-            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%d %H:%M:%S')
-
-        # Continuar con la lógica original de guardar el archivo
+        # Verifica si el archivo ya existe en la tabla files
         cursor.execute('''
-            SELECT id FROM files WHERE nombre = ? AND extension = ?
+            SELECT id FROM files WHERE nombre = %s AND extension = %s
         ''', (nombre, extension))
-        
+
         row = cursor.fetchone()
 
         if row:
             # Si existe, actualiza su información
             cursor.execute('''
                 UPDATE files
-                SET owner = ?, visibilidad = ?, ultima_modificacion = ?
-                WHERE id = ?
-            ''', (owner, visibilidad, ultima_modificacion_dt, row[0]))
+                SET owner = %s, visibilidad = %s, ultima_modificacion = %s
+                WHERE id = %s
+            ''', (owner, visibilidad, ultima_modificacion, row[0]))
             logging.info('Archivo actualizado: %s.%s', nombre, extension)
         else:
             # Si no existe, inserta un nuevo registro
             cursor.execute('''
                 INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_dt))
+                VALUES (%s, %s, %s, %s, %s)
+            ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo guardado: %s.%s', nombre, extension)
-        
+
         connection.commit()
-    except Exception as e:
+    except mysql.connector.Error as e:
         logging.error('Error al guardar o actualizar archivo: %s', e)
         raise e
 
