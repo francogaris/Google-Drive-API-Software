@@ -5,7 +5,7 @@ import os
 def conectar_db():
     """Establece la conexión con MySQL."""
     
-    host = os.getenv('DB_HOST')
+    host = os.getenv('DB_SERVER')
     database = os.getenv('DB_DATABASE')
     user = os.getenv('DB_USERNAME')
     password = os.getenv('DB_PASSWORD')
@@ -64,26 +64,21 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
         cursor = connection.cursor()
 
         # Verifica si el archivo ya existe en la tabla files
-        cursor.execute('''
-            SELECT id FROM files WHERE nombre = %s AND extension = %s
-        ''', (nombre, extension))
+        print("Ejecutando SELECT en guardar_archivo")
+        cursor.execute('''SELECT id FROM files WHERE nombre = %s AND extension = %s''', (nombre, extension))
         
         row = cursor.fetchone()
+        print("Resultado del SELECT:", row)
 
         if row:
             # Si existe, actualiza su información
-            cursor.execute('''
-                UPDATE files
-                SET owner = %s, visibilidad = %s, ultima_modificacion = %s
-                WHERE id = %s
-            ''', (owner, visibilidad, ultima_modificacion, row[0]))
+            print("Ejecutando UPDATE en guardar_archivo")
+            cursor.execute('''UPDATE files SET owner = %s, visibilidad = %s, ultima_modificacion = %s WHERE id = %s''', (owner, visibilidad, ultima_modificacion, row[0]))
             logging.info('Archivo actualizado: %s.%s', nombre, extension)
         else:
             # Si no existe, inserta un nuevo registro
-            cursor.execute('''
-                INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
+            print("Ejecutando INSERT en guardar_archivo")
+            cursor.execute('''INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion) VALUES (%s, %s, %s, %s, %s)''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo guardado: %s.%s', nombre, extension)
         
         connection.commit()
@@ -98,10 +93,8 @@ def inventario_historico(connection, nombre, extension, owner, visibilidad, ulti
         
         # Inserta el archivo en la tabla historical_files si es público
         if visibilidad == 'public':
-            cursor.execute('''
-                INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
+            print("Ejecutando INSERT en inventario_historico")
+            cursor.execute('''INSERT INTO historical_files(nombre, extension, owner, visibilidad, ultima_modificacion) VALUES(%s, %s, %s, %s, %s)''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo público añadido al inventario histórico: %s.%s', nombre, extension)
         
         connection.commit()
