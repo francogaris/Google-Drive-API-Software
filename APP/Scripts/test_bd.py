@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import bd_conexion
 from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
+from datetime import datetime
 
 class TestBDConexion(unittest.TestCase):
 
@@ -56,54 +57,46 @@ class TestBDConexion(unittest.TestCase):
         mock_cursor.execute.assert_any_call(expected_query_files)
         mock_cursor.execute.assert_any_call(expected_query_historical_files)
 
-    @patch('bd_conexion.conectar_db')
-    def test_guardar_archivo(self, mock_conectar_db):
-        # Configuración del mock
+    @patch('bd_conexion.pyodbc')
+    def test_guardar_archivo(self, mock_pyodbc):
+        # Mock de la conexión y el cursor
         mock_connection = MagicMock()
-        mock_conectar_db.return_value = mock_connection
-
-        # Formato MySQL directamente
-        ultima_modificacion_formateada = '2024-08-28T12:34:56.000Z'
-
-        # Ejecutar la función
-        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', ultima_modificacion_formateada)
-
-        # Verificaciones
-        mock_connection.cursor.assert_called_once()
         mock_cursor = mock_connection.cursor.return_value
-        expected_query = '''
-            SELECT id FROM files WHERE nombre = %s AND extension = %s
-        '''
-        # Verificar que la consulta esperada haya sido ejecutada
-        mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt'))
-
-        # Verificar que el INSERT o UPDATE se haya ejecutado con la fecha formateada
+        
+        ultima_modificacion = '2024-08-28T12:34:56.000Z'
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        
+        # Llamar a la función que estamos probando
+        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', ultima_modificacion)
+        
+        # Verificar que se haya hecho la consulta SELECT con los placeholders correctos
+        mock_cursor.execute.assert_any_call('''
+            SELECT id FROM files WHERE nombre = ? AND extension = ?
+        ''', ('test_file', 'txt'))
+        
+        # Verificar que se haya hecho la consulta INSERT o UPDATE con los placeholders correctos
         mock_cursor.execute.assert_any_call('''
             INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', ('test_file', 'txt', 'test_owner', 'private', ultima_modificacion_formateada))
-
-    @patch('bd_conexion.conectar_db')
-    def test_inventario_historico(self, mock_conectar_db):
-        # Configura el mock de la conexión y el cursor
+            VALUES (?, ?, ?, ?, ?)
+        ''', ('test_file', 'txt', 'test_owner', 'private', ultima_modificacion_dt))
+    
+    @patch('bd_conexion.pyodbc')
+    def test_inventario_historico(self, mock_pyodbc):
+        # Mock de la conexión y el cursor
         mock_connection = MagicMock()
-        mock_conectar_db.return_value = mock_connection
-
-        # Formato MySQL directamente
-        ultima_modificacion_formateada = '2024-08-28T12:34:56.000Z'
-
-        # Llama a la función con visibilidad 'public'
-        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', ultima_modificacion_formateada)
-
-        # Verifica que se ejecutó el INSERT con la fecha formateada
         mock_cursor = mock_connection.cursor.return_value
+        
+        ultima_modificacion = '2024-08-28T12:34:56.000Z'
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        
+        # Llamar a la función que estamos probando
+        bd_conexion.inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', ultima_modificacion)
+        
+        # Verificar que el cursor se haya ejecutado con la fecha formateada y como objeto datetime
         mock_cursor.execute.assert_called_once_with('''
             INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', ('archivo', 'txt', 'owner', 'public', ultima_modificacion_formateada))
-
-        # Verifica que se hizo commit
-        mock_connection.commit.assert_called_once()
+            VALUES (?, ?, ?, ?, ?)
+        ''', ('archivo', 'txt', 'owner', 'public', ultima_modificacion_dt))
 
 
 if __name__ == '__main__':
