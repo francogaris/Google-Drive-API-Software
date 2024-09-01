@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 import bd_conexion
 from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
 
 class TestBDConexion(unittest.TestCase):
 
-    @patch('bd_conexion.pyodbc.connect')
+    @patch('bd_conexion.mysql.connector.connect')
     def test_conectar_db(self, mock_connect):
         # Configura el mock para que devuelva una conexión ficticia
         mock_connect.return_value = 'mock_connection'
@@ -33,24 +33,22 @@ class TestBDConexion(unittest.TestCase):
         mock_cursor = mock_connection.cursor.return_value
         # Las consultas esperadas
         expected_query_files = '''
-            IF NOT EXISTS (SELECT * FROM Challenge_MELI.dbo.sysobjects WHERE name='files' AND xtype='U')
-            CREATE TABLE files (
-                id INT PRIMARY KEY IDENTITY(1,1),
-                nombre NVARCHAR(255),
-                extension NVARCHAR(255),
-                owner NVARCHAR(255),
-                visibilidad NVARCHAR(50),
+            CREATE TABLE IF NOT EXISTS files (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(255),
+                extension VARCHAR(255),
+                owner VARCHAR(255),
+                visibilidad VARCHAR(50),
                 ultima_modificacion DATETIME
             )
         '''
         expected_query_historical_files = '''
-            IF NOT EXISTS (SELECT * FROM Challenge_MELI.dbo.sysobjects WHERE name='historical_files' AND xtype='U')
-            CREATE TABLE historical_files (
-                id INT PRIMARY KEY IDENTITY(1,1),
-                nombre NVARCHAR(255),
-                extension NVARCHAR(255),
-                owner NVARCHAR(255),
-                visibilidad NVARCHAR(50),
+            CREATE TABLE IF NOT EXISTS historical_files (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(255),
+                extension VARCHAR(255),
+                owner VARCHAR(255),
+                visibilidad VARCHAR(50),
                 ultima_modificacion DATETIME
             )
         '''
@@ -71,12 +69,12 @@ class TestBDConexion(unittest.TestCase):
         mock_connection.cursor.assert_called_once()
         mock_cursor = mock_connection.cursor.return_value
         expected_query = '''
-            SELECT id FROM files WHERE nombre = ? AND extension = ?
+            SELECT id FROM files WHERE nombre = %s AND extension = %s
         '''
         # Verificar que la consulta esperada haya sido ejecutada
         mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt'))
 
-    @patch('bd_conexion.pyodbc.connect')
+    @patch('bd_conexion.mysql.connector.connect')
     def test_inventario_historico(self, mock_connect):
         # Configura el mock de la conexión y el cursor
         mock_connection = MagicMock()
@@ -90,7 +88,7 @@ class TestBDConexion(unittest.TestCase):
         # Verifica que se ejecutó el INSERT
         mock_cursor.execute.assert_called_once_with('''
                 INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s)
             ''', ('archivo', 'txt', 'owner', 'public', '2024-08-28'))
 
         # Verifica que se hizo commit
