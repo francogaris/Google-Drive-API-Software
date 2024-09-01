@@ -66,7 +66,7 @@ class TestBDConexion(unittest.TestCase):
         mock_connection.cursor.return_value = mock_cursor
         
         # Ejecutar la función con el formato de fecha correcto
-        guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', datetime.datetime(2024, 8, 28, 12, 34, 56))
+        guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', datetime(2024, 8, 28, 12, 34, 56))
 
         # Verificaciones
         mock_connection.cursor.assert_called_once()
@@ -75,7 +75,7 @@ class TestBDConexion(unittest.TestCase):
             VALUES (%s, %s, %s, %s, %s)
         '''
         # Verificar que la consulta esperada haya sido ejecutada
-        mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt', 'test_owner', 'private', datetime.datetime(2024, 8, 28, 12, 34, 56)))
+        mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt', 'test_owner', 'private', datetime(2024, 8, 28, 12, 34, 56)))
         mock_connection.commit.assert_called_once()
 
     @patch('bd_conexion.mysql.connector.connect')
@@ -87,7 +87,7 @@ class TestBDConexion(unittest.TestCase):
         mock_connection.cursor.return_value = mock_cursor
 
         # Ejecutar la función con el formato de fecha correcto
-        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', datetime.datetime(2024, 8, 28, 12, 34, 56))
+        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', datetime(2024, 8, 28, 12, 34, 56))
 
         # Verificaciones
         mock_connection.cursor.assert_called_once()
@@ -96,7 +96,7 @@ class TestBDConexion(unittest.TestCase):
             VALUES (%s, %s, %s, %s, %s)
         '''
         # Verificar que la consulta esperada haya sido ejecutada
-        mock_cursor.execute.assert_called_once_with(expected_query, ('archivo', 'txt', 'owner', 'public', datetime.datetime(2024, 8, 28, 12, 34, 56)))
+        mock_cursor.execute.assert_called_once_with(expected_query, ('archivo', 'txt', 'owner', 'public', datetime(2024, 8, 28, 12, 34, 56)))
         mock_connection.commit.assert_called_once()
 
 if __name__ == '__main__':
