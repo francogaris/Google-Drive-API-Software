@@ -68,6 +68,9 @@ class TestBDConexion(unittest.TestCase):
         
         cursor = mock_connection.cursor.return_value
         
+        # Simular el resultado de la primera consulta
+        cursor.fetchone.return_value = (1,)
+        
         # Llamar a la función con parámetros de prueba
         guardar_archivo(mock_connection, 'file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00')
         
