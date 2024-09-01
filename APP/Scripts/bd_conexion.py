@@ -64,13 +64,16 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
     try:
         cursor = connection.cursor()
 
-        # Convertir la fecha y hora al formato compatible con MySQL
-        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%d %H:%M:%S')
-        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
+        # Intentar con el primer formato (ISO 8601 con 'Z')
+        try:
+            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        except ValueError:
+            # Si falla, intentar con el formato sin 'Z'
+            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%d %H:%M:%S')
 
-        # Verifica si el archivo ya existe en la tabla files
+        # Continuar con la lógica original de guardar el archivo
         cursor.execute('''
-            SELECT id FROM files WHERE nombre = %s AND extension = %s
+            SELECT id FROM files WHERE nombre = ? AND extension = ?
         ''', (nombre, extension))
         
         row = cursor.fetchone()
@@ -79,16 +82,16 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
             # Si existe, actualiza su información
             cursor.execute('''
                 UPDATE files
-                SET owner = %s, visibilidad = %s, ultima_modificacion = %s
-                WHERE id = %s
-            ''', (owner, visibilidad, ultima_modificacion_formateada, row[0]))
+                SET owner = ?, visibilidad = ?, ultima_modificacion = ?
+                WHERE id = ?
+            ''', (owner, visibilidad, ultima_modificacion_dt, row[0]))
             logging.info('Archivo actualizado: %s.%s', nombre, extension)
         else:
             # Si no existe, inserta un nuevo registro
             cursor.execute('''
                 INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_formateada))
+                VALUES (?, ?, ?, ?, ?)
+            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_dt))
             logging.info('Archivo guardado: %s.%s', nombre, extension)
         
         connection.commit()
@@ -102,15 +105,19 @@ def inventario_historico(connection, nombre, extension, owner, visibilidad, ulti
     try:
         cursor = connection.cursor()
 
-        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
-        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
+        # Intentar con el primer formato (ISO 8601 con 'Z')
+        try:
+            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        except ValueError:
+            # Si falla, intentar con el formato sin 'Z'
+            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%d %H:%M:%S')
         
         # Inserta el archivo en la tabla historical_files si es público
         if visibilidad == 'public':
             cursor.execute('''
                 INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_formateada))
+            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_dt))
             logging.info('Archivo público añadido al inventario histórico: %s.%s', nombre, extension)
         
         connection.commit()
