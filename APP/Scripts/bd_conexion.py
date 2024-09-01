@@ -68,7 +68,7 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
         cursor.execute('''
             SELECT id FROM files WHERE nombre = %s AND extension = %s
         ''', (nombre, extension))
-
+        
         row = cursor.fetchone()
 
         if row:
@@ -86,31 +86,23 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
                 VALUES (%s, %s, %s, %s, %s)
             ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo guardado: %s.%s', nombre, extension)
-
+        
         connection.commit()
     except mysql.connector.Error as e:
         logging.error('Error al guardar o actualizar archivo: %s', e)
         raise e
 
-
 def inventario_historico(connection, nombre, extension, owner, visibilidad, ultima_modificacion):
     """Mantiene un inventario histórico de archivos que fueron públicos."""
     try:
         cursor = connection.cursor()
-
-        # Intentar con el primer formato (ISO 8601 con 'Z')
-        try:
-            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
-        except ValueError:
-            # Si falla, intentar con el formato sin 'Z'
-            ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%d %H:%M:%S')
         
         # Inserta el archivo en la tabla historical_files si es público
         if visibilidad == 'public':
             cursor.execute('''
                 INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_dt))
+            ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo público añadido al inventario histórico: %s.%s', nombre, extension)
         
         connection.commit()
