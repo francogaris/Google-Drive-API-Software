@@ -65,7 +65,7 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
 
         # Verifica si el archivo ya existe en la tabla files
         cursor.execute('''
-            SELECT id FROM files WHERE nombre = %s AND extension = %s
+            SELECT id FROM files WHERE nombre = ? AND extension = ?
         ''', (nombre, extension))
         
         row = cursor.fetchone()
@@ -74,15 +74,15 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
             # Si existe, actualiza su información
             cursor.execute('''
                 UPDATE files
-                SET owner = %s, visibilidad = %s, ultima_modificacion = %s
-                WHERE id = %s
+                SET owner = ?, visibilidad = ?, ultima_modificacion = ?
+                WHERE id = ?
             ''', (owner, visibilidad, ultima_modificacion, row[0]))
             logging.info('Archivo actualizado: %s.%s', nombre, extension)
         else:
             # Si no existe, inserta un nuevo registro
             cursor.execute('''
                 INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (?, ?, ?, ?, ?)
             ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo guardado: %s.%s', nombre, extension)
         
@@ -100,7 +100,7 @@ def inventario_historico(connection, nombre, extension, owner, visibilidad, ulti
         if visibilidad == 'public':
             cursor.execute('''
                 INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (?, ?, ?, ?, ?)
             ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
             logging.info('Archivo público añadido al inventario histórico: %s.%s', nombre, extension)
         
