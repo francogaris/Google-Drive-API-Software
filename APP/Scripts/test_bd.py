@@ -71,9 +71,11 @@ class TestBDConexion(unittest.TestCase):
         # Simular el resultado de la primera consulta
         cursor.fetchone.return_value = (1,)
         
+        ultima_modificacion = '2024-09-01T00:00:00.000Z'
+
         # Llamar a la función con parámetros de prueba
         print("Llamando a guardar_archivo")
-        guardar_archivo(mock_connection, 'file', 'txt', 'owner', 'private', '2024-09-01 00:00:00')
+        guardar_archivo(mock_connection, 'file', 'txt', 'owner', 'private', ultima_modificacion)
         
         # Imprimir las consultas reales ejecutadas
         print("Consultas ejecutadas:", cursor.execute.call_args_list)
@@ -95,10 +97,12 @@ class TestBDConexion(unittest.TestCase):
         mock_connect.return_value = mock_connection
         
         cursor = mock_connection.cursor.return_value
+
+        ultima_modificacion = '2024-09-01T00:00:00.000Z'
         
         # Llamar a la función con parámetros de prueba
         print("Llamando a inventario_historico")
-        inventario_historico(mock_connection, 'file', 'txt', 'owner', 'public', '2024-09-01 00:00:00')
+        inventario_historico(mock_connection, 'file', 'txt', 'owner', 'public', ultima_modificacion)
         
         # Imprimir las consultas reales ejecutadas
         print("Consultas ejecutadas:", cursor.execute.call_args_list)
