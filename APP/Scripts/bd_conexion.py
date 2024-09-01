@@ -65,7 +65,7 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
         cursor = connection.cursor()
 
         # Convertir la fecha y hora al formato compatible con MySQL
-        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%d %H:%M:%S')
         ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
 
         # Verifica si el archivo ya existe en la tabla files

@@ -63,7 +63,7 @@ class TestBDConexion(unittest.TestCase):
         mock_conectar_db.return_value = mock_connection
 
         # Formato MySQL directamente
-        ultima_modificacion_formateada = '2024-08-28 12:34:56'
+        ultima_modificacion_formateada = '2024-08-28T12:34:56.000Z'
 
         # Ejecutar la función
         bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', ultima_modificacion_formateada)
@@ -90,7 +90,7 @@ class TestBDConexion(unittest.TestCase):
         mock_conectar_db.return_value = mock_connection
 
         # Formato MySQL directamente
-        ultima_modificacion_formateada = '2024-08-28 12:34:56'
+        ultima_modificacion_formateada = '2024-08-28T12:34:56.000Z'
 
         # Llama a la función con visibilidad 'public'
         inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', ultima_modificacion_formateada)
