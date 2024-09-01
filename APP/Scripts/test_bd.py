@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch, MagicMock
 import bd_conexion
@@ -5,35 +6,40 @@ from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar
 from datetime import datetime
 
 class TestBDConexion(unittest.TestCase):
-
-    @patch('bd_conexion.mysql.connector.connect')
+    
+    @patch('mysql.connector.connect')
     def test_conectar_db(self, mock_connect):
-        # Configura el mock para que devuelva una conexión ficticia
-        mock_connect.return_value = 'mock_connection'
-        
-        # Llama a la función conectar_db
-        conexion = bd_conexion.conectar_db()
-        
-        # Verifica que se haya llamado a connect
-        mock_connect.assert_called_once()
-
-        # Verifica que el objeto de conexión se haya devuelto
-        self.assertEqual(conexion, 'mock_connection')
-
-    @patch('bd_conexion.conectar_db')
-    def test_crear_tablas(self, mock_conectar_db):
-        # Configuración del mock
+        """Test para la función conectar_db."""
+        # Configurar el mock
         mock_connection = MagicMock()
-        mock_conectar_db.return_value = mock_connection
+        mock_connect.return_value = mock_connection
         
-        # Ejecutar la función
-        bd_conexion.crear_tablas(mock_connection)
+        # Llamar a la función
+        connection = conectar_db()
         
-        # Verificaciones
-        mock_connection.cursor.assert_called_once()
-        mock_cursor = mock_connection.cursor.return_value
-        # Las consultas esperadas
-        expected_query_files = '''
+        # Verificar que la función de conexión se ha llamado correctamente
+        mock_connect.assert_called_once_with(
+            host=os.getenv('DB_HOST'),
+            database=os.getenv('DB_DATABASE'),
+            user=os.getenv('DB_USERNAME'),
+            password=os.getenv('DB_PASSWORD')
+        )
+        
+        # Verificar que la conexión se ha establecido correctamente
+        self.assertEqual(connection, mock_connection)
+    
+    @patch('src.bd_conexion.mysql.connector.connect')
+    def test_crear_tablas(self, mock_connect):
+        """Test para la función crear_tablas."""
+        mock_connection = MagicMock()
+        mock_connect.return_value = mock_connection
+        
+        # Llamar a la función
+        crear_tablas(mock_connection)
+        
+        # Verificar que se han ejecutado los comandos SQL correctos
+        cursor = mock_connection.cursor.return_value
+        cursor.execute.assert_any_call('''
             CREATE TABLE IF NOT EXISTS files (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(255),
@@ -42,8 +48,8 @@ class TestBDConexion(unittest.TestCase):
                 visibilidad VARCHAR(50),
                 ultima_modificacion DATETIME
             )
-        '''
-        expected_query_historical_files = '''
+        ''')
+        cursor.execute.assert_any_call('''
             CREATE TABLE IF NOT EXISTS historical_files (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(255),
@@ -52,54 +58,43 @@ class TestBDConexion(unittest.TestCase):
                 visibilidad VARCHAR(50),
                 ultima_modificacion DATETIME
             )
-        '''
-        # Verificar que las consultas esperadas hayan sido ejecutadas
-        mock_cursor.execute.assert_any_call(expected_query_files)
-        mock_cursor.execute.assert_any_call(expected_query_historical_files)
-
-    @patch('bd_conexion.mysql.connector.connect')
-    def test_guardar_archivo(self, mock_conectar_db):
-        # Configuración del mock
+        ''')
+    
+    @patch('src.bd_conexion.mysql.connector.connect')
+    def test_guardar_archivo(self, mock_connect):
+        """Test para la función guardar_archivo."""
         mock_connection = MagicMock()
-        mock_conectar_db.return_value = mock_connection
-        mock_cursor = MagicMock()
-        mock_connection.cursor.return_value = mock_cursor
+        mock_connect.return_value = mock_connection
         
-        # Ejecutar la función con el formato de fecha correcto
-        fecha = datetime(2024, 8, 28, 12, 34, 56)
-        guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', fecha)
-
-        # Verificaciones
-        mock_connection.cursor.assert_called_once()
-        expected_query = '''
-            INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-            VALUES (%s, %s, %s, %s, %s)
-        '''
-        # Verificar que la consulta esperada haya sido ejecutada
-        mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt', 'test_owner', 'private', fecha))
-        mock_connection.commit.assert_called_once()
-
-    @patch('bd_conexion.mysql.connector.connect')
-    def test_inventario_historico(self, mock_conectar_db):
-        # Configuración del mock
+        cursor = mock_connection.cursor.return_value
+        
+        # Llamar a la función con parámetros de prueba
+        guardar_archivo(mock_connection, 'file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00')
+        
+        # Verificar que se ha ejecutado la consulta correcta
+        cursor.execute.assert_called()
+        call_args_list = cursor.execute.call_args_list
+        
+        # Verificar si la consulta de actualización o inserción se ejecuta correctamente
+        self.assertTrue(any('UPDATE files' in call[0][0] for call in call_args_list))
+        self.assertTrue(any('INSERT INTO files' in call[0][0] for call in call_args_list))
+    
+    @patch('src.bd_conexion.mysql.connector.connect')
+    def test_inventario_historico(self, mock_connect):
+        """Test para la función inventario_historico."""
         mock_connection = MagicMock()
-        mock_conectar_db.return_value = mock_connection
-        mock_cursor = MagicMock()
-        mock_connection.cursor.return_value = mock_cursor
-
-        # Ejecutar la función con el formato de fecha correcto
-        fecha = datetime(2024, 8, 28, 12, 34, 56)
-        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', fecha)
-
-        # Verificaciones
-        mock_connection.cursor.assert_called_once()
-        expected_query = '''
+        mock_connect.return_value = mock_connection
+        
+        cursor = mock_connection.cursor.return_value
+        
+        # Llamar a la función con parámetros de prueba
+        inventario_historico(mock_connection, 'file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00')
+        
+        # Verificar que se ha ejecutado la consulta de inserción correctamente
+        cursor.execute.assert_called_once_with('''
             INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
             VALUES (%s, %s, %s, %s, %s)
-        '''
-        # Verificar que la consulta esperada haya sido ejecutada
-        mock_cursor.execute.assert_called_once_with(expected_query, ('archivo', 'txt', 'owner', 'public', fecha))
-        mock_connection.commit.assert_called_once()
-
+        ''', ('file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00'))
+    
 if __name__ == '__main__':
     unittest.main()

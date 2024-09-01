@@ -1,21 +1,20 @@
 import logging
 import mysql.connector
 import os
-from datetime import datetime
 
 def conectar_db():
     """Establece la conexión con MySQL."""
     
-    server = os.getenv('DB_SERVER')
+    host = os.getenv('DB_HOST')
     database = os.getenv('DB_DATABASE')
-    username = os.getenv('DB_USERNAME')
+    user = os.getenv('DB_USERNAME')
     password = os.getenv('DB_PASSWORD')
     
     try:
         connection = mysql.connector.connect(
-            host=server,
+            host=host,
             database=database,
-            user=username,
+            user=user,
             password=password
         )
         logging.info('Conexión a la base de datos establecida exitosamente')
