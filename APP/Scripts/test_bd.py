@@ -62,8 +62,8 @@ class TestBDConexion(unittest.TestCase):
         mock_connection = MagicMock()
         mock_conectar_db.return_value = mock_connection
         
-        # Ejecutar la función
-        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', '2024-08-28')
+        # Ejecutar la función con el formato de fecha correcto
+        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', '2024-08-28T12:34:56.000Z')
         
         # Verificaciones
         mock_connection.cursor.assert_called_once()
@@ -82,14 +82,14 @@ class TestBDConexion(unittest.TestCase):
         mock_connect.return_value = mock_connection
         mock_connection.cursor.return_value = mock_cursor
 
-        # Llama a la función con visibilidad 'public'
-        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', '2024-08-28')
+        # Llama a la función con visibilidad 'public' y formato de fecha correcto
+        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', '2024-08-28T12:34:56.000Z')
 
         # Verifica que se ejecutó el INSERT
         mock_cursor.execute.assert_called_once_with('''
                 INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', ('archivo', 'txt', 'owner', 'public', '2024-08-28'))
+            ''', ('archivo', 'txt', 'owner', 'public', '2024-08-28T12:34:56.000Z'))
 
         # Verifica que se hizo commit
         mock_connection.commit.assert_called_once()
