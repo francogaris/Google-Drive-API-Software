@@ -73,20 +73,20 @@ class TestBDConexion(unittest.TestCase):
         
         # Verificar que se ha ejecutado la consulta correcta
         cursor.execute.assert_any_call('''
-            SELECT id FROM files WHERE nombre = ? AND extension = ?
+            SELECT id FROM files WHERE nombre = %s AND extension = %s
         ''', ('file_name', 'txt'))
         
         cursor.execute.assert_any_call('''
             UPDATE files
-            SET owner = ?, visibilidad = ?, ultima_modificacion = ?
-            WHERE id = ?
+            SET owner = %s, visibilidad = %s, ultima_modificacion = %s
+            WHERE id = %s
         ''', ('owner_name', 'private', '2024-09-01 00:00:00', 1))
         
         cursor.execute.assert_any_call('''
             INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', ('file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00'))
-    
+
     @patch('bd_conexion.mysql.connector.connect')
     def test_inventario_historico(self, mock_connect):
         """Test para la función inventario_historico."""
@@ -101,7 +101,7 @@ class TestBDConexion(unittest.TestCase):
         # Verificar que se ha ejecutado la consulta de inserción correctamente
         cursor.execute.assert_any_call('''
             INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', ('file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00'))
     
 if __name__ == '__main__':
