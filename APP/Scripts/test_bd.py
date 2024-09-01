@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import bd_conexion
 from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
+from datetime import datetime
 
 class TestBDConexion(unittest.TestCase):
 
@@ -61,10 +62,15 @@ class TestBDConexion(unittest.TestCase):
         # Configuración del mock
         mock_connection = MagicMock()
         mock_conectar_db.return_value = mock_connection
-        
+
+        # Formatear la fecha al formato MySQL
+        ultima_modificacion = '2024-08-28T12:34:56.789Z'
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
+
         # Ejecutar la función
-        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', '2024-08-28')
-        
+        bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', ultima_modificacion_formateada)
+
         # Verificaciones
         mock_connection.cursor.assert_called_once()
         mock_cursor = mock_connection.cursor.return_value
@@ -74,22 +80,32 @@ class TestBDConexion(unittest.TestCase):
         # Verificar que la consulta esperada haya sido ejecutada
         mock_cursor.execute.assert_any_call(expected_query, ('test_file', 'txt'))
 
-    @patch('bd_conexion.mysql.connector.connect')
-    def test_inventario_historico(self, mock_connect):
+        # Verificar que el INSERT o UPDATE se haya ejecutado con la fecha formateada
+        mock_cursor.execute.assert_any_call('''
+            INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', ('test_file', 'txt', 'test_owner', 'private', ultima_modificacion_formateada))
+
+    @patch('bd_conexion.conectar_db')
+    def test_inventario_historico(self, mock_conectar_db):
         # Configura el mock de la conexión y el cursor
         mock_connection = MagicMock()
-        mock_cursor = MagicMock()
-        mock_connect.return_value = mock_connection
-        mock_connection.cursor.return_value = mock_cursor
+        mock_conectar_db.return_value = mock_connection
+
+        # Formatear la fecha al formato MySQL
+        ultima_modificacion = '2024-08-28T12:34:56.789Z'
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
 
         # Llama a la función con visibilidad 'public'
-        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', '2024-08-28')
+        inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', ultima_modificacion_formateada)
 
-        # Verifica que se ejecutó el INSERT
+        # Verifica que se ejecutó el INSERT con la fecha formateada
+        mock_cursor = mock_connection.cursor.return_value
         mock_cursor.execute.assert_called_once_with('''
-                INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', ('archivo', 'txt', 'owner', 'public', '2024-08-28'))
+            INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', ('archivo', 'txt', 'owner', 'public', ultima_modificacion_formateada))
 
         # Verifica que se hizo commit
         mock_connection.commit.assert_called_once()

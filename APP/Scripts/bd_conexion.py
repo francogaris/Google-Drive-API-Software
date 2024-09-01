@@ -1,6 +1,7 @@
 import logging
 import mysql.connector
 import os
+from datetime import datetime
 
 def conectar_db():
     """Establece la conexión con MySQL."""
@@ -63,6 +64,10 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
     try:
         cursor = connection.cursor()
 
+        # Convertir la fecha y hora al formato compatible con MySQL
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
+
         # Verifica si el archivo ya existe en la tabla files
         cursor.execute('''
             SELECT id FROM files WHERE nombre = %s AND extension = %s
@@ -76,32 +81,36 @@ def guardar_archivo(connection, nombre, extension, owner, visibilidad, ultima_mo
                 UPDATE files
                 SET owner = %s, visibilidad = %s, ultima_modificacion = %s
                 WHERE id = %s
-            ''', (owner, visibilidad, ultima_modificacion, row[0]))
+            ''', (owner, visibilidad, ultima_modificacion_formateada, row[0]))
             logging.info('Archivo actualizado: %s.%s', nombre, extension)
         else:
             # Si no existe, inserta un nuevo registro
             cursor.execute('''
                 INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
+            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_formateada))
             logging.info('Archivo guardado: %s.%s', nombre, extension)
         
         connection.commit()
-    except mysql.connector.Error as e:
+    except Exception as e:
         logging.error('Error al guardar o actualizar archivo: %s', e)
         raise e
+
 
 def inventario_historico(connection, nombre, extension, owner, visibilidad, ultima_modificacion):
     """Mantiene un inventario histórico de archivos que fueron públicos."""
     try:
         cursor = connection.cursor()
+
+        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
+        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
         
         # Inserta el archivo en la tabla historical_files si es público
         if visibilidad == 'public':
             cursor.execute('''
                 INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', (nombre, extension, owner, visibilidad, ultima_modificacion))
+            ''', (nombre, extension, owner, visibilidad, ultima_modificacion_formateada))
             logging.info('Archivo público añadido al inventario histórico: %s.%s', nombre, extension)
         
         connection.commit()
