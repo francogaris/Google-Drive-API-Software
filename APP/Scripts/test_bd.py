@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch, MagicMock
 import bd_conexion
 from bd_conexion import inventario_historico, conectar_db, crear_tablas, guardar_archivo
-from datetime import datetime
 
 class TestBDConexion(unittest.TestCase):
 
@@ -63,10 +62,8 @@ class TestBDConexion(unittest.TestCase):
         mock_connection = MagicMock()
         mock_conectar_db.return_value = mock_connection
 
-        # Formatear la fecha al formato MySQL
-        ultima_modificacion = '2024-08-28T12:34:56.789Z'
-        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
-        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
+        # Formato MySQL directamente
+        ultima_modificacion_formateada = '2024-08-28 12:34:56'
 
         # Ejecutar la función
         bd_conexion.guardar_archivo(mock_connection, 'test_file', 'txt', 'test_owner', 'private', ultima_modificacion_formateada)
@@ -92,10 +89,8 @@ class TestBDConexion(unittest.TestCase):
         mock_connection = MagicMock()
         mock_conectar_db.return_value = mock_connection
 
-        # Formatear la fecha al formato MySQL
-        ultima_modificacion = '2024-08-28T12:34:56.789Z'
-        ultima_modificacion_dt = datetime.strptime(ultima_modificacion, '%Y-%m-%dT%H:%M:%S.%fZ')
-        ultima_modificacion_formateada = ultima_modificacion_dt.strftime('%Y-%m-%d %H:%M:%S')
+        # Formato MySQL directamente
+        ultima_modificacion_formateada = '2024-08-28 12:34:56'
 
         # Llama a la función con visibilidad 'public'
         inventario_historico(mock_connection, 'archivo', 'txt', 'owner', 'public', ultima_modificacion_formateada)
@@ -109,6 +104,7 @@ class TestBDConexion(unittest.TestCase):
 
         # Verifica que se hizo commit
         mock_connection.commit.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()
