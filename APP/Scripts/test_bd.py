@@ -28,7 +28,7 @@ class TestBDConexion(unittest.TestCase):
         # Verificar que la conexión se ha establecido correctamente
         self.assertEqual(connection, mock_connection)
     
-    @patch('Scripts.bd_conexion.mysql.connector.connect')
+    @patch('bd_conexion.mysql.connector.connect')
     def test_crear_tablas(self, mock_connect):
         """Test para la función crear_tablas."""
         mock_connection = MagicMock()
@@ -60,7 +60,7 @@ class TestBDConexion(unittest.TestCase):
             )
         ''')
     
-    @patch('Scripts.bd_conexion.mysql.connector.connect')
+    @patch('bd_conexion.mysql.connector.connect')
     def test_guardar_archivo(self, mock_connect):
         """Test para la función guardar_archivo."""
         mock_connection = MagicMock()
@@ -79,7 +79,7 @@ class TestBDConexion(unittest.TestCase):
         self.assertTrue(any('UPDATE files' in call[0][0] for call in call_args_list))
         self.assertTrue(any('INSERT INTO files' in call[0][0] for call in call_args_list))
     
-    @patch('Scripts.bd_conexion.mysql.connector.connect')
+    @patch('bd_conexion.mysql.connector.connect')
     def test_inventario_historico(self, mock_connect):
         """Test para la función inventario_historico."""
         mock_connection = MagicMock()
