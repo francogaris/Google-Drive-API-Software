@@ -83,12 +83,12 @@ class TestBDConexion(unittest.TestCase):
             UPDATE files
             SET owner = %s, visibilidad = %s, ultima_modificacion = %s
             WHERE id = %s
-        ''', ('owner_name', 'private', '2024-09-01 00:00:00', 1))
+        ''', ('owner', 'private', '2024-09-01 00:00:00', 1))
         
         cursor.execute.assert_any_call('''
             INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
             VALUES (%s, %s, %s, %s, %s)
-        ''', ('file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00'))
+        ''', ('file', 'txt', 'owner', 'private', '2024-09-01 00:00:00'))
 
     @patch('bd_conexion.mysql.connector.connect')
     def test_inventario_historico(self, mock_connect):
