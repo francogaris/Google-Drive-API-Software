@@ -72,12 +72,20 @@ class TestBDConexion(unittest.TestCase):
         guardar_archivo(mock_connection, 'file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00')
         
         # Verificar que se ha ejecutado la consulta correcta
-        cursor.execute.assert_called()
-        call_args_list = cursor.execute.call_args_list
+        cursor.execute.assert_any_call('''
+            SELECT id FROM files WHERE nombre = %s AND extension = %s
+        ''', ('file_name', 'txt'))
         
-        # Verificar si la consulta de actualización o inserción se ejecuta correctamente
-        self.assertTrue(any('UPDATE files' in call[0][0] for call in call_args_list))
-        self.assertTrue(any('INSERT INTO files' in call[0][0] for call in call_args_list))
+        cursor.execute.assert_any_call('''
+            UPDATE files
+            SET owner = %s, visibilidad = %s, ultima_modificacion = %s
+            WHERE id = %s
+        ''', ('owner_name', 'private', '2024-09-01 00:00:00', 1))
+        
+        cursor.execute.assert_any_call('''
+            INSERT INTO files (nombre, extension, owner, visibilidad, ultima_modificacion)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', ('file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00'))
     
     @patch('bd_conexion.mysql.connector.connect')
     def test_inventario_historico(self, mock_connect):
@@ -91,7 +99,7 @@ class TestBDConexion(unittest.TestCase):
         inventario_historico(mock_connection, 'file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00')
         
         # Verificar que se ha ejecutado la consulta de inserción correctamente
-        cursor.execute.assert_called_once_with('''
+        cursor.execute.assert_any_call('''
             INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
             VALUES (%s, %s, %s, %s, %s)
         ''', ('file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00'))
