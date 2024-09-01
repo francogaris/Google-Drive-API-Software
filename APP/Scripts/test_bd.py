@@ -72,7 +72,7 @@ class TestBDConexion(unittest.TestCase):
         cursor.fetchone.return_value = (1,)
         
         # Llamar a la función con parámetros de prueba
-        guardar_archivo(mock_connection, 'file_name', 'txt', 'owner_name', 'private', '2024-09-01 00:00:00')
+        guardar_archivo(mock_connection, 'file', 'txt', 'owner', 'private', '2024-09-01 00:00:00')
         
         # Verificar que se ha ejecutado la consulta correcta
         cursor.execute.assert_any_call('''
@@ -99,13 +99,13 @@ class TestBDConexion(unittest.TestCase):
         cursor = mock_connection.cursor.return_value
         
         # Llamar a la función con parámetros de prueba
-        inventario_historico(mock_connection, 'file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00')
+        inventario_historico(mock_connection, 'file', 'txt', 'owner', 'public', '2024-09-01 00:00:00')
         
         # Verificar que se ha ejecutado la consulta de inserción correctamente
         cursor.execute.assert_any_call('''
             INSERT INTO historical_files (nombre, extension, owner, visibilidad, ultima_modificacion)
             VALUES (%s, %s, %s, %s, %s)
-        ''', ('file_name', 'txt', 'owner_name', 'public', '2024-09-01 00:00:00'))
+        ''', ('file', 'txt', 'owner', 'public', '2024-09-01 00:00:00'))
     
 if __name__ == '__main__':
     unittest.main()
