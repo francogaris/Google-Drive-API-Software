@@ -20,6 +20,7 @@ Este proyecto es una aplicación en Python que realizar un inventario de archivo
           - test_drive_api.py
           - test_bd.py
           - test_email.py
+      - log.log
   - Consigna:
       - Challenge MeLi - ES.pdf
 
