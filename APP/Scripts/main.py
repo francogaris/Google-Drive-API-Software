@@ -3,10 +3,22 @@ from drive_api import autenticacion_api, lista_archivos_drive, es_archivo_public
 from bd_conexion import conectar_db, crear_tablas, guardar_archivo, inventario_historico
 from servicio_mail import autenticacion_gmail, cambiar_visibilidad_archivo, crear_mensaje, enviar_mail
 
+# Configuración básica del logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("log.log"),
+        logging.StreamHandler()
+    ]
+)
+
 def main():
     logging.basicConfig(level=logging.INFO)
 
     try:
+        logging.info("Inicio del proceso.")
+
         # Autenticación e inicialización de los servicios
         service_drive = autenticacion_api()
         service_gmail = autenticacion_gmail()
@@ -46,6 +58,8 @@ def main():
 
     except Exception as e:
         logging.error(f'Error en la ejecución principal: {e}')
+    
+    logging.info("Fin del proceso.")
 
 if __name__ == '__main__':
     main()
